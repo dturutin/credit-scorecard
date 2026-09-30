@@ -1,6 +1,7 @@
 """WOE and Information Value computation."""
 
 from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 
@@ -31,7 +32,9 @@ def compute_woe_iv(
     summary["pct_bad"] = (summary["bad"] + 0.5) / (total_bad + 0.5)
 
     summary["woe"] = np.log(summary["pct_good"] / summary["pct_bad"])
-    summary["iv_contribution"] = (summary["pct_good"] - summary["pct_bad"]) * summary["woe"]
+    summary["iv_contribution"] = (summary["pct_good"] - summary["pct_bad"]) * summary[
+        "woe"
+    ]
 
     return summary, summary["iv_contribution"].sum()
 

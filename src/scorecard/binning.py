@@ -1,6 +1,7 @@
 """Feature binning utilities for WOE-based scorecard modeling."""
 
 from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 

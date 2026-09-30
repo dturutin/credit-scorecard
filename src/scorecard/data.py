@@ -1,15 +1,33 @@
 """Data loading utilities for the German Credit scorecard project."""
 
 from pathlib import Path
+
 import pandas as pd
 
 COLUMNS = [
-    "checking_status", "duration", "credit_history", "purpose", "credit_amount", 
-    "savings_status", "employment", "installment_rate", "personal_status_sex",
-    "other_parties", "residence_since", "property_magnitude", "age",
-    "other_payment_plans", "housing", "existing_credits", "job",
-    "num_dependents", "own_telephone", "foreign_worker", "target"
+    "checking_status",
+    "duration",
+    "credit_history",
+    "purpose",
+    "credit_amount",
+    "savings_status",
+    "employment",
+    "installment_rate",
+    "personal_status_sex",
+    "other_parties",
+    "residence_since",
+    "property_magnitude",
+    "age",
+    "other_payment_plans",
+    "housing",
+    "existing_credits",
+    "job",
+    "num_dependents",
+    "own_telephone",
+    "foreign_worker",
+    "target",
 ]
+
 
 def load_german_credit(path: str | Path) -> pd.DataFrame:
     """

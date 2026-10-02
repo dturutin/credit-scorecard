@@ -1,0 +1,26 @@
+name: scorecard_env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - numpy
+  - pandas
+  - ipykernel
+  - jupyterlab
+  - seaborn
+  - matplotlib
+  - scikit-learn
+  - ruff
+  - pip
+  - pip:
+      - fastapi
+      - uvicorn
+      - pydantic
+      - streamlit
+      - requests
+      - httpx
+      - joblib
+      - pytest
+      - nbstripout
+      - statsmodels
+      - -e .

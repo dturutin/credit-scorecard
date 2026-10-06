@@ -1,5 +1,7 @@
 """Streamlit frontend for the credit scorecard API (Russian UI)."""
 
+import pandas as pd
+import plotly.graph_objects as go
 import requests
 import streamlit as st
 
@@ -32,8 +34,8 @@ PURPOSE = {
 }
 SAVINGS_STATUS = {
     "A61": "Менее 100 марок",
-    "A62": "100 – 500 марок",
-    "A63": "500 – 1000 марок",
+    "A62": "100 - 500 марок",
+    "A63": "500 - 1000 марок",
     "A64": "Более 1000 марок",
     "A65": "Неизвестно / нет сберсчёта",
 }
@@ -81,6 +83,37 @@ def _select(label: str, options: dict[str, str]) -> str:
     # Selectbox shows human-readable labels, returns the underlying code
     choice = st.selectbox(label, list(options.values()))
     return next(code for code, text in options.items() if text == choice)
+
+
+def render_waterfall(breakdown: list[dict]) -> go.Figure:
+    """Horizontal waterfall of each feature's scorecard points contribution."""
+    df = pd.DataFrame(breakdown).sort_values("points", ascending=True)
+    labels = [f"{row['feature']} ({row['bin']})" for _, row in df.iterrows()]
+    values = df["points"].tolist()
+
+    fig = go.Figure(
+        go.Waterfall(
+            orientation="h",
+            measure=["relative"] * len(values),
+            y=labels,
+            x=values,
+            connector={"line": {"color": "rgba(150,150,150,0.4)", "width": 1}},
+            increasing={"marker": {"color": "#2ecc71"}},
+            decreasing={"marker": {"color": "#e74c3c"}},
+            text=[f"{v:+.1f}" for v in values],
+            textposition="outside",
+        )
+    )
+    fig.update_layout(
+        title="Вклад признаков в итоговый балл",
+        showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        font={"size": 13},
+        margin={"l": 10, "r": 10, "t": 50, "b": 10},
+        height=500,
+    )
+    return fig
 
 
 st.set_page_config(page_title="Кредитный скоринг", page_icon="💳")
@@ -150,6 +183,8 @@ if submitted:
         band = result["risk_band"]
         band_labels = {"low": "🟢 НИЗКИЙ", "medium": "🟡 СРЕДНИЙ", "high": "🔴 ВЫСОКИЙ"}
         col3.metric("Уровень риска", band_labels[band])
+
+        st.plotly_chart(render_waterfall(result["breakdown"]), use_container_width=True)
 
     except requests.exceptions.ConnectionError:
         st.error(

@@ -77,6 +77,9 @@ def test_score_new_applicant_respects_feature_order():
 
     assert abs(result["pd"] - expected_pd) < 1e-6
     assert result["points"] == 15  # 10 + 5
+    assert "breakdown" in result
+    assert len(result["breakdown"]) == len(feature_order)
+    assert abs(sum(b["points"] for b in result["breakdown"]) - result["points"]) < 0.01
 
 
 def test_score_new_applicant_handles_unseen_category():

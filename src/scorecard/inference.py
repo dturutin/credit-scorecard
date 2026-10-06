@@ -2,9 +2,23 @@
 
 from __future__ import annotations
 
+from typing import TypedDict
+
 import pandas as pd
 
 from scorecard.scorecard import score_applicant
+
+
+class FeatureContribution(TypedDict):
+    feature: str
+    bin: str
+    points: float
+
+
+class ScoreResult(TypedDict):
+    pd: float
+    points: float
+    breakdown: list[FeatureContribution]
 
 
 def bin_new_value(value, artifact: dict):
@@ -32,14 +46,16 @@ def score_new_applicant(
     scorecard_table: pd.DataFrame,
     model,
     feature_order: list[str],
-) -> dict[str, float]:
+) -> ScoreResult:
     """
     Score a new applicant from raw feature values (e.g. an API request body).
 
     Returns
     -------
     dict with keys "pd" (predicted probability of default) and
-    "points" (total scorecard points).
+    "points" (total scorecard points), and "breakdown" (list of per-feature
+    {feature, bin, points} dicts, in feature_order, for explainability
+    — e.g. a waterfall chart).
     """
     woe_values = {}
     binned_values = {}
@@ -58,4 +74,21 @@ def score_new_applicant(
     pd_pred = float(model.predict_proba(woe_row)[0, 1])
     points = score_applicant(binned_values, scorecard_table)
 
-    return {"pd": pd_pred, "points": points}
+    breakdown = []
+    for feature in feature_order:
+        bin_label = str(binned_values[feature])
+        match = scorecard_table[
+            (scorecard_table["feature"] == feature)
+            & (scorecard_table["bin"] == bin_label)
+        ]
+        if match.empty:
+            raise ValueError(f"No scorecard entry for {feature}={bin_label}")
+        breakdown.append(
+            {
+                "feature": feature,
+                "bin": bin_label,
+                "points": float(match["points"].iloc[0]),
+            }
+        )
+
+    return {"pd": pd_pred, "points": points, "breakdown": breakdown}

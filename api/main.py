@@ -47,10 +47,17 @@ class ApplicantRequest(BaseModel):
     age: int
 
 
+class FeatureContribution(BaseModel):
+    feature: str
+    bin: str
+    points: float
+
+
 class ScoreResponse(BaseModel):
     pd: float
     points: float
     risk_band: Literal["low", "medium", "high"]
+    breakdown: list[FeatureContribution]
 
 
 def _risk_band(pd_value: float) -> Literal["low", "medium", "high"]:
@@ -72,8 +79,12 @@ def score(applicant: ApplicantRequest) -> ScoreResponse:
         app.state.model,
         app.state.feature_order,
     )
+    breakdown = [FeatureContribution(**item) for item in result["breakdown"]]
     return ScoreResponse(
-        pd=result["pd"], points=result["points"], risk_band=_risk_band(result["pd"])
+        pd=result["pd"],
+        points=result["points"],
+        risk_band=_risk_band(result["pd"]),
+        breakdown=breakdown,
     )
 
 
